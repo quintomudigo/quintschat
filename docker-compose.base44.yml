@@ -1,0 +1,39 @@
+services:
+  server:
+    image: node:22
+    working_dir: /app/server
+    command: ["sh", "-ec", "CI=true npm install --no-audit --no-fund && exec npm run dev"]
+    volumes:
+      - ./:/app
+    environment:
+      - PORT=8080
+      - DATA_DIR=/app/server/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: on-failure
+
+  web:
+    image: node:22
+    working_dir: /app/frontend
+    command: ["sh", "-ec", "CI=true npm install --no-audit --no-fund && exec npm run dev"]
+    volumes:
+      - ./:/app
+    environment:
+      - API_URL=http://server:8080
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=${__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS}
+    ports:
+      - "3000:5173"
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: on-failure
