@@ -1,0 +1,16 @@
+{
+  "name": "quintschat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "quintschat messenger — a web chat messenger (individual & group chat, calling, media sharing)",
+  "workspaces": [
+    "server",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
